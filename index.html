@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<head>
+
+    <meta charset="utf-8">
+    <title>ECharts 地图展示</title>
+</head>
+<style type="text/css">
+    * {
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<body>
+
+    <!--定义页面图表容器-->
+    <!-- 必须制定容器的大小（height、width） -->
+
+    <div id="maps" style="width: 33%; height: 500px; border: 1px solid #ccc; display: inline-block;float: left;"></div>
+    <div id="mapsProvice" style="width: 33%; height: 500px; border: 1px solid #ccc; display: inline-block;float: left;"></div>
+    <div id="mapsCity" style="width: 33%; height: 500px; border: 1px solid #ccc; display: inline-block;float: left;"></div>
+
+
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="echarts.min.js"></script>
+    <script type="text/javascript" src="mapjs/china.js"></script>
+    <script type="text/javascript">
+        function loadScript(url, callback) {
+            var script = document.createElement("script")
+            script.type = "text/javascript";
+            if (script.readyState) {
+                script.onreadystatechange = function() {
+                    if (script.readyState == "loaded" || script.readyState == "complete") {
+                        script.onreadystatechange = null;
+                        callback();
+                    }
+                };
+            } else {
+                script.onload = function() {
+                    callback();
+                };
+            }
+            script.src = url;
+            document.getElementsByTagName("head")[0].appendChild(script);
+        }
+        var myChartMap = echarts.init(document.getElementById('maps'));
+
+        var option = {
+            title: {
+                text: '全国态势图',
+                subtext: '进入省市可详细查看',
+                x: 'center',
+                textStyle: {
+                    color: '#404a59'
+                }
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                data: ['安全状态']
+            },
+            dataRange: {
+                orient: 'vertical',
+                x: 'left',
+                min: 0,
+                max: 1000,
+                color: ['orange', 'yellow'],
+                text: ['高', '低'], // 文本，默认为数值文本
+
+            },
+            series: [{
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}'
+                },
+                name: '安全态势',
+                type: 'map',
+                mapType: 'china',
+                x: '5%',
+                y: 'center',
+                roam: false,
+                selectedMode: 'single',
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show: true
+                        }
+                    },
+                    emphasis: {
+                        label: {
+                            show: true
+                        }
+                    }
+                },
+                data: [{
+                        name: '北京',
+                        selected: true,
+                        value: 100
+                    }, {
+                        name: '天津',
+                        selected: false
+                    }, {
+                        name: '上海',
+                        selected: false
+                    }, {
+                        name: '重庆',
+                        selected: true,
+                        value: 100
+                    }, {
+                        name: '河北',
+                        selected: false
+                    }, {
+                        name: '河南',
+                        selected: false
+                    }, {
+                        name: '云南',
+                        selected: false
+                    }, {
+                        name: '辽宁',
+                        selected: true,
+                        value: 100
+                    }, {
+                        name: '黑龙江',
+                        selected: false
+                    }, {
+                        name: '湖南',
+                        selected: true,
+                        value: 1000
+                    }, {
+                        name: '安徽',
+                        selected: false
+                    },
+
+                ]
+            }],
+            animation: false
+        };
+
+        myChartMap.setOption(option, true); //显示国家地图
+        var myChartProvice = echarts.init(document.getElementById('mapsProvice'));
+        var myChartCity = echarts.init(document.getElementById('mapsCity'));
+        if (selectProvice = "undefined") {
+            selectProvice = "四川";
+            selectCity = "成都市";
+            var url = "mapjs/" + selectProvice + "/" + selectProvice + ".js";
+            loadScript(url, setOpt);
+            var cityurl = "mapjs/" + selectProvice + "/city/" + selectCity + ".js";
+            loadScript(cityurl, setOptCity);
+
+            setOpt();
+            setOptCity();
+        }
+
+        myChartMap.on('mapselectchanged', function(param) { //单击省份事件
+            selectProvice = param.batch[0].name;
+            var url = "mapjs/" + selectProvice + "/" + selectProvice + ".js";
+            loadScript(url, setOpt);
+            setOpt();
+        })
+        myChartProvice.on('mapselectchanged', function(param) {
+            selectCity = param.batch[0].name;
+            var cityurl = "mapjs/" + selectProvice + "/city/" + selectCity + ".js";
+            loadScript(cityurl, setOptCity);
+            setOptCity();
+        });
+
+        function setOpt() {
+            var option = {
+                title: {
+                    text: selectProvice + '地区详情',
+                    x: 'center',
+                    textStyle: {
+                        color: 'black'
+                    }
+                },
+                dataRange: {
+                    x: '-3000px',
+                    y: 'bottom',
+                    splitList: [{
+                            start: 41,
+                            color: 'rgba(182,132,220,0.8)'
+                        }, {
+                            start: 21,
+                            end: 40,
+                            color: 'rgba(255,108,96,0.8)'
+                        }, {
+                            start: 11,
+                            end: 20,
+                            color: 'rgba(252,179,34,0.8)'
+                        }, {
+                            start: 5,
+                            end: 10,
+                            color: 'rgba(89,172,226,0.8)'
+                        }, {
+                            start: 0,
+                            end: 4,
+                            label: '<4',
+                            color: "rgba(120,205,81,0.8)"
+                        },
+
+                    ],
+                    //										        
+                    textStyle: {
+                        color: 'white',
+                    },
+                },
+                roam: true,
+                series: [{
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}'
+                    },
+                    name: '安全态势',
+                    type: 'map',
+                    mapType: selectProvice,
+                    x: 'center',
+                    y: 'center',
+                    //							            roam: true,									            
+                    selectedMode: 'single',
+                    itemStyle: {
+                        normal: {
+                            label: {
+                                show: true
+                            }
+                        },
+                        emphasis: {
+                            label: {
+                                show: true
+                            }
+                        }
+                    },
+                    data: ""
+                }],
+                animation: false,
+
+            }
+            myChartProvice.setOption(option, true);
+        }
+
+        function setOptCity() {
+            var option = {
+                title: {
+                    text: selectCity + '地区详情',
+                    x: 'center',
+                    textStyle: {
+                        color: 'black'
+                    }
+                },
+                roam: true,
+                dataRange: {
+                    x: '-3000px',
+                    y: 'bottom',
+                    splitList: [{
+                        start: 41,
+                        color: 'rgba(182,132,220,0.8)'
+                    }, {
+                        start: 21,
+                        end: 40,
+                        color: 'rgba(255,108,96,0.8)'
+                    }, {
+                        start: 11,
+                        end: 20,
+                        color: 'rgba(252,179,34,0.8)'
+                    }, {
+                        start: 5,
+                        end: 10,
+                        color: 'rgba(89,172,226,0.8)'
+                    }, {
+                        start: 0,
+                        end: 4,
+                        label: '<4',
+                        color: "rgba(120,205,81,0.8)"
+                    }, ],
+
+                    textStyle: {
+                        color: 'white',
+                    },
+
+                },
+                series: [{
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}'
+                    },
+                    name: '安全态势',
+                    type: 'map',
+                    mapType: selectCity,
+                    x: 'center',
+                    y: 'center',
+                    //									roam: true,
+                    itemStyle: {
+                        normal: {
+                            label: {
+                                show: true
+                            },
+
+                        },
+                        emphasis: {
+                            label: {
+                                show: true
+                            }
+                        }
+                    },
+                    selectedMode: 'single',
+                    data: ""
+                }],
+                animation: false,
+
+            }
+
+
+            myChartCity.setOption(option, true);
+        }
+    </script>
+
+</body>
+
+</html>
